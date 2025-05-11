@@ -15,6 +15,7 @@ COPY . .
 
 # Set environment variables
 ENV PORT=8080
+ENV PYTHONUNBUFFERED=1
 
 # Expose the port
 EXPOSE 8080
