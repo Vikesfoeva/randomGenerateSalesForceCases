@@ -1,4 +1,3 @@
-
 # Corrected Python script: generateSFCase.py
 # Key changes:
 # 1. Modified Salesforce import to use `simple_salesforce` directly.
@@ -85,7 +84,8 @@ def generate_support_email_content(account=None):
         return None
 
     try:
-        client = OpenAI()
+        print("Calling OpenAI API...")
+        client = OpenAI(api_key=OPENAI_API_KEY)
         
         prompt_content = """
         You are simulating an end user of a healthcare software application who needs to submit a support ticket.
@@ -117,12 +117,12 @@ def generate_support_email_content(account=None):
                 {"role": "user", "content": prompt_content}
             ],
             temperature=0.7,
-            response_format={"type": "json_object"} # For compatible models
+            response_format={"type": "json_object"}
         )
-        
+        print("OpenAI response:", response)
         if response.choices and response.choices[0].message and response.choices[0].message.content:
             content_str = response.choices[0].message.content
-            email_data = json.loads(content_str) # 'json' is now globally available
+            email_data = json.loads(content_str)
             if 'subject' in email_data and 'description' in email_data:
                 print(f"Generated Email Subject: {email_data['subject']}")
                 print(f"Generated Email Description: {email_data['description']}")
@@ -150,19 +150,22 @@ def create_salesforce_case(sf_client, subject, description, account_id=None):
         str: The ID of the newly created Case, or None if an error occurs.
     """
     if not sf_client:
+        print("No Salesforce client provided.")
         return None
 
     case_data = {
         'Subject': subject,
         'Description': description,
-        'Status': 'New',  # Default status
-        'Origin': 'Web'   # Default origin
+        'Status': 'New',
+        'Origin': 'Web'
     }
     if account_id:
         case_data['AccountId'] = account_id
 
     try:
+        print("Creating Salesforce case with data:", case_data)
         result = sf_client.Case.create(case_data)
+        print("Salesforce create result:", result)
         if result.get('success'):
             case_id = result.get('id')
             print(f"Successfully created Case in Salesforce. Case ID: {case_id}")
